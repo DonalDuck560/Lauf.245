@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fortschritt</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png"> 
+    <meta name="theme-color" content="#ffffff">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #000000;
+            --muted-text: #767677;
+            --border-color: #e5e5e7;
+            --accent-green: #34c759;
+            --accent-blue: #007aff;
+            --tab-inactive: #aeaeaf;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding-bottom: 95px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: #ffffff;
+        }
+
+        header {
+            padding: 24px 20px 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 22px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: tabSlide 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes tabSlide {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Ring Sektion */
+        .progress-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 25px 0;
+        }
+
+        .circle-container {
+            position: relative;
+            width: 190px;
+            height: 190px;
+        }
+
+        .circle-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: #f2f2f7;
+            stroke-width: 7;
+        }
+
+        .circle-progress {
+            fill: none;
+            stroke: var(--accent-green);
+            stroke-width: 7;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.6s ease-out;
+        }
+
+        .circle-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 80%;
+        }
+
+        .circle-text .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--muted-text);
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+
+        .circle-text .value {
+            font-size: 38px;
+            font-weight: 900;
+            margin: 1px 0;
+            letter-spacing: -1px;
+        }
+
+        .circle-text .sub {
+            font-size: 11px;
+            color: var(--muted-text);
+            font-weight: 500;
+        }
+
+        .sport-type {
+            margin-top: 15px;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Listen & Titel */
+        .section-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 35px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .more-link {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            border-bottom: 1.5px solid #000;
+            padding-bottom: 1px;
+            cursor: pointer;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .activity-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .activity-data h4 {
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .activity-data p {
+            font-size: 13px;
+            color: var(--muted-text);
+            margin-top: 3px;
+        }
+
+        .activity-right {
+            text-align: right;
+            font-size: 13px;
+            color: var(--muted-text);
+        }
+
+        /* Formular */
+        .form-card {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--muted-text);
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 0;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #000000;
+        }
+
+        button.btn-black {
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Metriken */
+        .metrics-summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .metric-box .m-val {
+            font-size: 20px;
+            font-weight: 900;
+        }
+        .metric-box .m-val.blue { color: var(--accent-blue); }
+        .metric-box .m-val.green { color: var(--accent-green); }
+        .metric-box .m-lbl {
+            font-size: 9px;
+            color: var(--muted-text);
+            text-transform: uppercase;
+            margin-top: 6px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Verpflegungs-Cards Look */
+        .nutrition-card {
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            margin-bottom: 15px;
+            background: #ffffff;
+        }
+
+        .nutrition-card h3 {
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nutrition-card p {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1c1c1e;
+        }
+
+        .nutrition-highlight {
+            font-weight: 800;
+            color: var(--accent-blue);
+        }
+
+        /* Untere Tab-Bar für 4 Elemente */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 450px;
+            height: 75px;
+            background: #ffffff;
+            border-top: 1px solid var(--border-color);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            align-items: center;
+            z-index: 1000;
+            padding-bottom: 10px;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: var(--tab-inactive);
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .tab-item.active {
+            color: #000000;
+        }
+
+        .tab-icon {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .tab-item.active .tab-icon {
+            stroke-width: 2.8;
+        }
+
+        .tab-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+
+    <header>
+        <h1 id="pageTitle">Fortschritt</h1>
+    </header>
+
+    <div id="tab-eingabe" class="tab-content">
+        <div class="form-card">
+            <div class="form-group">
+                <label>Gemini API Key</label>
+                <input type="password" id="apiKeyInput" placeholder="Hier API-Key einfügen...">
+            </div>
+            <div class="form-group">
+                <label>Datum</label>
+                <input type="date" id="dateInput">
+            </div>
+            <div class="form-group">
+                <label>Distanz (km)</label>
+                <input type="number" id="distInput" step="0.01" placeholder="z.B. 7.00">
+            </div>
+            <div class="form-group">
+                <label>Dauer (hh:mm:ss oder Minuten)</label>
+                <input type="text" id="timeInput" placeholder="z.B. 00:37:50">
+            </div>
+            <div class="form-group">
+                <label>Höhenmeter Aufwärts (m)</label>
+                <input type="number" id="elevationInput" value="0">
+            </div>
+            <button class="btn-black" onclick="addRun()">Aktivität speichern</button>
+        </div>
+    </div>
+
+    <div id="tab-fortschritt" class="tab-content active">
+        <div class="progress-section">
+            <div class="circle-container">
+                <svg class="circle-svg">
+                    <circle class="circle-bg" cx="95" cy="95" r="85"></circle>
+                    <circle class="circle-progress" id="progressCircle" cx="95" cy="95" r="85" stroke-dasharray="534" stroke-dashoffset="534"></circle>
+                </svg>
+                <div class="circle-text">
+                    <p class="label">Diese Woche</p>
+                    <p class="value" id="statWeek">0,0</p>
+                    <p class="sub">von 4 km</p>
+                </div>
+            </div>
+            <div class="sport-type">🏃‍♂️ LAUFEN</div>
+        </div>
+
+        <div class="section-title-row">
+            <h2 class="section-title">Analyse-Diagramm</h2>
+        </div>
+        <div style="position:relative; height:160px; width:100%;">
+            <canvas id="runChart"></canvas>
+        </div>
+
+        <div class="section-title-row">
+            <h2 class="section-title">Aktivitäten</h2>
+            <span class="more-link">Mehr</span>
+        </div>
+        <div id="activityList"></div>
+    </div>
+
+    <div id="tab-ki" class="tab-content">
+        <div class="metrics-summary-row">
+            <div class="metric-box"><p class="m-val blue" id="kiPace">--:--</p><p class="m-lbl">Aktivität Pace</p></div>
+            <div class="metric-box"><p class="m-val green" id="kiEle">0 m</p><p class="m-lbl">HM Aufwärts</p></div>
+            <div class="metric-box"><p class="m-val" id="kiTotal">0,0</p><p class="m-lbl">Gesamt KM</p></div>
+        </div>
+        <button class="btn-black" onclick="runAI()">AI Coach Analyse starten</button>
+        <div id="aiResponse" style="margin-top: 20px; font-size: 14px; line-height: 1.6; white-space: pre-line; color: #1c1c1e;"></div>
+    </div>
+
+    <div id="tab-verpflegung" class="tab-content">
+        <div class="section-title-row" style="margin-top: 5px;">
+            <h2 class="section-title">Dein Hydrations- & Geh-Plan</h2>
+        </div>
+        
+        <div class="nutrition-card">
+            <h3>💧 Wasserbedarf pro KM</h3>
+            <p>Basierend auf deinem Gewicht von 83 kg verlierst du beim Laufen viel Flüssigkeit. Du benötigst exakt <span class="nutrition-highlight">12 ml Wasser pro Kilogramm und Stunde</span>.<br><br>Das bedeutet für dich: Ungefähr <span class="nutrition-highlight" id="nutWaterPerKm">13-15 ml Wasser pro gelaufenem Kilometer</span> (ca. 700-800 ml pro Stunde Laufzeit bei normalem Tempo).</p>
+        </div>
+
+        <div class="nutrition-card">
+            <h3>⏱️ Gehpausen-Timing (Run-Walk)</h3>
+            <p id="nutWalkStrategy">Trage zuerst eine Aktivität ein, um deine personalisierte Rennstrategie basierend auf deiner Pace zu sehen.</p>
+        </div>
+
+        <div class="nutrition-card" style="border-left: 3px solid var(--accent-green);">
+            <h3>ℹ️ Athlete Profile</h3>
+            <p style="font-size: 12px; color: var(--muted-text);">Berechnet für: 189 cm | 83 kg. Diese Werte passen sich automatisch an die Intensität deines jeweils letzten Laufs an.</p>
+        </div>
+    </div>
+
+    <nav class="tab-bar">
+        <div class="tab-item" onclick="switchTab('eingabe', 'Aktivität hinzufügen')">
+            <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            <span class="tab-label">Aktivität</span>
+        </div>
+        <div class="tab-item active" onclick="switchTab('fortschritt', 'Fortschritt')">
+            <svg class="tab-icon" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6" stroke-linecap="round"/></svg>
+            <span class="tab-label">Fortschritt</span>
+        </div>
+        <div class="tab-item" onclick="switchTab('ki', 'AI Coach')">
+            <svg class="tab-icon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>
+            <span class="tab-label">AI Coach</span>
+        </div>
+        <div class="tab-item" onclick="switchTab('verpflegung', 'Verpflegung')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="tab-label">Verpflegung</span>
+        </div>
+    </nav>
+
+</div>
+
+<script>
+    let runs = [];
+    try {
+        runs = JSON.parse(localStorage.getItem("runs")) || [
+            { date: "2026-06-16", dist: 10.04, time: "00:51:05", elevation: 90 },
+            { date: "2026-06-29", dist: 7.00, time: "00:37:50", elevation: 0 }
+        ];
+    } catch(e) {
+        runs = [];
+    }
+    
+    let myChart = null;
+    const dateInputEl = document.getElementById('dateInput');
+    if(dateInputEl) dateInputEl.valueAsDate = new Date();
+
+    function switchTab(tabId, title) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+        
+        const targetTab = document.getElementById('tab-' + tabId);
+        if(targetTab) targetTab.classList.add('active');
+        
+        const titleEl = document.getElementById('pageTitle');
+        if(titleEl) titleEl.innerText = title;
+        
+        const tabs = ['eingabe', 'fortschritt', 'ki', 'verpflegung'];
+        const idx = tabs.indexOf(tabId);
+        if(idx !== -1) document.querySelectorAll('.tab-item')[idx].classList.add('active');
+
+        if(tabId === 'fortschritt') updateUI();
+        if(tabId === 'ki') prepareKiTab();
+        if(tabId === 'verpflegung') calculateNutrition();
+    }
+
+    function parseTimeToSeconds(timeStr) {
+        if(!timeStr) return 0;
+        const s = String(timeStr);
+        if(!s.includes(':')) return (parseInt(s, 10) || 0) * 60;
+        const parts = s.split(':');
+        if(parts.length === 3) {
+            return (parseInt(parts[0], 10) || 0) * 3600 + (parseInt(parts[1], 10) || 0) * 60 + (parseInt(parts[2], 10) || 0);
+        }
+        return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    }
+
+    function formatSeconds(secs) {
+        const h = Math.floor(secs / 3600);
+        const m = Math.floor((secs % 3600) / 60);
+        const s = secs % 60;
+        return [h > 0 ? h : null, m, s]
+            .filter(x => x !== null)
+            .map(x => x.toString().padStart(2, '0'))
+            .join(':');
+    }
+
+    function calc() {
+        let total = 0;
+        let week = 0;
+        const siebenTageAgo = new Date();
+        siebenTageAgo.setDate(siebenTageAgo.getDate() - 7);
+        
+        runs.forEach(r => {
+            const d = parseFloat(r.dist) || 0;
+            total += d;
+            if(new Date(r.date) >= siebenTageAgo) week += d;
+        });
+        return { total, week };
+    }
+
+    function updateUI() {
+        const c = calc();
+        const statWeekEl = document.getElementById("statWeek");
+        if(statWeekEl) statWeekEl.innerText = c.week.toFixed(1).replace('.', ',');
+        
+        const circle = document.getElementById("progressCircle");
+        if(circle) {
+            const prozent = Math.min(c.week / 4.0, 1);
+            circle.style.strokeDashoffset = 534 - (534 * prozent);
+        }
+
+        const list = document.getElementById("activityList");
+        if(list) {
+            list.innerHTML = "";
+            [...runs].reverse().forEach(r => {
+                const dObj = new Date(r.date);
+                const fDate = isNaN(dObj.getTime()) ? r.date : dObj.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const dVal = parseFloat(r.dist) || 0;
+                const tDisp = String(r.time).includes(':') ? r.time : formatSeconds((parseInt(r.time, 10) || 0) * 60);
+                
+                list.innerHTML += `
+                    <div class="activity-item">
+                        <div class="activity-left">
+                            <div class="activity-icon-box">🏃</div>
+                            <div class="activity-data">
+                                <h4>${dVal.toFixed(2).replace('.', ',')} KM</h4>
+                                <p>${tDisp}</p>
+                            </div>
+                        </div>
+                        <div class="activity-right">
+                            <div>☀️</div>
+                            <div style="margin-top:2px;">${fDate}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        const canvas = document.getElementById('runChart');
+        if(canvas) {
+            const letzteLaeufe = runs.slice(-10);
+            const labels = letzteLaeufe.map(r => r.date.split('-').reverse().slice(0,2).join('.'));
+            const dataPoints = letzteLaeufe.map(r => parseFloat(r.dist) || 0);
+
+            if(myChart) myChart.destroy();
+            const ctx = canvas.getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataPoints,
+                        borderColor: '#007aff',
+                        borderWidth: 2.5,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#007aff',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(0, 122, 255, 0.05)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#f2f2f7' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    }
+
+    function addRun() {
+        const date = document.getElementById("dateInput").value;
+        const dist = parseFloat(document.getElementById("distInput").value);
+        const timeInput = document.getElementById("timeInput").value;
+        const elevation = parseInt(document.getElementById("elevationInput").value, 10) || 0;
+
+        if(!date || isNaN(dist) || !timeInput) return alert("Bitte alle Felder ausfüllen.");
+
+        runs.push({ date, dist, time: timeInput, elevation });
+        runs.sort((a,b) => new Date(a.date) - new Date(b.date));
+        
+        try {
+            localStorage.setItem("runs", JSON.stringify(runs));
+        } catch(e) {
+            console.error(e);
+        }
+        
+        document.getElementById("distInput").value = "";
+        document.getElementById("timeInput").value = "";
+        document.getElementById("elevationInput").value = "0";
+        
+        switchTab('fortschritt', 'Fortschritt');
+    }
+
+    function prepareKiTab() {
+        const c = calc();
+        const kiTotalEl = document.getElementById("kiTotal");
+        if(kiTotalEl) kiTotalEl.innerText = c.total.toFixed(1).replace('.', ',');
+        
+        const letzterLauf = runs.length > 0 ? runs[runs.length - 1] : null;
+        if(letzterLauf) {
+            const secs = parseTimeToSeconds(letzterLauf.time);
+            const paceMin = secs > 0 && letzterLauf.dist > 0 ? (secs / 60) / letzterLauf.dist : 0;
+            const min = Math.floor(paceMin);
+            const sec = Math.round((paceMin - min) * 60);
+            
+            const kiPaceEl = document.getElementById("kiPace");
+            if(kiPaceEl) kiPaceEl.innerText = `${min}:${sec.toString().padStart(2, '0')} Min/KM`;
+            
+            const kiEleEl = document.getElementById("kiEle");
+            if(kiEleEl) kiEleEl.innerText = (letzterLauf.elevation || 0) + " M";
+        }
+    }
+
+    // Mathematische Berechnung der Verpflegung für dein Profil (83kg / 189cm)
+    function calculateNutrition() {
+        const letzterLauf = runs.length > 0 ? runs[runs.length - 1] : null;
+        const waterEl = document.getElementById("nutWaterPerKm");
+        const walkEl = document.getElementById("nutWalkStrategy");
+
+        if(!letzterLauf) return;
+
+        const secs = parseTimeToSeconds(letzterLauf.time);
+        const stunden = secs / 3600;
+        
+        // Schweißverlust-Formel basierend auf 83kg Gewicht
+        const gesamtWasserBedarfMl = 83 * 10 * stunden; // 830ml pro Stunde Belastung
+        const wasserPerKm = gesamtWasserBedarfMl / letzterLauf.dist;
+        
+        if(waterEl) {
+            waterEl.innerHTML = `<strong>${wasserPerKm.toFixed(0)} ml Wasser pro Kilometer</strong>. Bei deinem letzten Lauf über ${letzterLauf.dist} km hättest du insgesamt ca. <strong>${gesamtWasserBedarfMl.toFixed(0)} ml</strong> trinken müssen.`;
+        }
+
+        // Gehpausen-Logik (Galloway-Methode) angepasst an deine Pace
+        const paceMin = (secs / 60) / letzterLauf.dist;
+        let strategieText = "";
+
+        if(paceMin < 5) {
+            strategieText = `Da du eine sehr schnelle Pace von unter 5 min/km läufst, planst du Gehpausen am besten strategisch rein: <strong>Alle 1.500 Meter (oder alle 7-8 Minuten) für exakt 30 Sekunden gehen</strong>. Das hält deinen Puls stabil.`;
+        } else if(paceMin >= 5 && paceMin < 6) {
+            strategieText = `Für deine Pace von ca. 5-6 min/km empfiehlt sich die klassische Intervall-Strategie: <strong>Nach jeweils 5 Minuten Laufen legst du 1 Minute Gehpause ein</strong>. Optimal, um bei deiner Körpergröße die Gelenke zu entlasten.`;
+        } else {
+            strategieText = `Bei gemütlicherem Tempo oder längeren Läufen: Planen Sie feste Wechsel ein. <strong>3 Minuten Laufen, gefolgt von 1 Minute Gehen</strong>. Nutze die Gehpausen direkt, um einen Schluck Wasser zu nehmen!`;
+        }
+
+        if(walkEl) walkEl.innerHTML = strategieText;
+    }
+
+    async function runAI() {
+        const key = document.getElementById("apiKeyInput").value.trim();
+        const aiBox = document.getElementById("aiResponse");
+        if(!key) return alert("Bitte füge zuerst deinen Gemini API Key im Aktivität-Tab hinzu.");
+
+        if(aiBox) aiBox.innerText = "Dein Performance Coach analysiert die Kurve...";
+        const c = calc();
+        const letzterLauf = runs.length > 0 ? runs[runs.length - 1] : null;
+        let laufDetails = "Keine Läufe.";
+        
+        if(letzterLauf) {
+            const secs = parseTimeToSeconds(letzterLauf.time);
+            const paceMin = secs > 0 && letzterLauf.dist > 0 ? (secs / 60) / letzterLauf.dist : 0;
+            const min = Math.floor(paceMin);
+            const sec = Math.round((paceMin - min) * 60);
+            laufDetails = `Letzter Lauf: ${letzterLauf.dist} km in ${letzterLauf.time}. Höhenmeter: ${letzterLauf.elevation}m. Pace: ${min}:${sec.toString().padStart(2, '0')} min/km`;
+        }
+
+        const prompt = `Du bist ein digitaler Elite-Laufcoach. Ich bin 189cm groß und wiege 83kg. Analysiere präzise meinen letzten Lauf: ${laufDetails}. Historie diese Woche: ${c.week} km. Gib mir Feedback zu Training und Verpflegung im sportlichen Nike-Run-Stil.`;
+
+        try {
+            const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + key, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            if(aiBox) aiBox.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Fehler.";
+        } catch (e) {
+            if(aiBox) aiBox.innerText = "Fehler bei der Verbindung zum KI-Server.";
+        }
+    }
+
+    updateUI();
+</script>
+</body>
+</html>
